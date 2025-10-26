@@ -59,14 +59,23 @@ pub async fn adb_list_device() -> Result<Vec<AdbDevice>, String> {
 /// Lấy dữ liệu các thiết bị từ database 
 pub async fn db_list_device(db_state: State<'_, DbState>) -> Result<Vec<Device>, String>{
     // Lấy dữ liệu từ database
-    let devices = sqlx::query_as::<_, Device>("SELECT * FROM devices")
+    let mut devices = sqlx::query_as::<_, Device>("SELECT * FROM devices")
         .fetch_all(&db_state.pool)
         .await
         .map_err(|e| e.to_string())?;
 
     // Lấy dữ liệu bằng lệnh adb
     // Nếu thiết bị lấy từ database mà có trong danh sách adb trả về thì update lại status 
-
+    let keys= adb_list_device().await.unwrap();
+    
+    for device in &mut devices {
+        if keys.iter().any(|x| x.serial == device.serial) {
+            device.status = Some("Connected".to_string());
+        }
+        else {
+            device.status = Some("Failed".to_string());
+        }
+    }
 
     Ok(devices)
 }
@@ -75,6 +84,7 @@ pub async fn db_list_device(db_state: State<'_, DbState>) -> Result<Vec<Device>,
 
 /// Lưu dữ liệu các thiết bị vào database
 pub async fn db_save_devices(data: Vec<Device>){
+    // Check xem device nào chưa có mới lưu
     todo!()
 }
 
@@ -83,6 +93,13 @@ pub async fn db_delete_devives(data: Vec<i32>){
     todo!()
 }
 
+pub async fn export_devices() {
+    todo!()
+}
+
+pub async fn import_devices(){
+    todo!()
+}
 
 //TEST
 #[tauri::command]
