@@ -6,12 +6,13 @@ use sqlx::sqlite::SqlitePoolOptions;
 use tokio::sync::Mutex;
 
 mod server;
-mod device;
+mod devices;
+mod adb;
 mod setting;
 mod message;
 
 use server::{ServerState, start_server, stop_server, get_status};
-use device::{adb_list_device, test_error, test_success};
+//use device::{adb_list_device, test_error, test_success};
 use setting::*;
 
 use crate::server::DbState;
@@ -34,9 +35,9 @@ async fn main() {
         // Server
         start_server, stop_server, get_status,
         // Device
-        adb_list_device,
-        test_success,
-        test_error
+        //adb_list_device,
+        //test_success,
+        //test_error
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
