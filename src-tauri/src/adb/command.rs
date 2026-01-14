@@ -1,6 +1,6 @@
 use tokio::process::Command;
 
-use crate::adb::args::{ADB, DEVICE, DEVICES, PUSH, VERSION};
+use crate::adb::args::{ADB, DEVICE, DEVICES, PULL, PUSH, VERSION};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdbDevice {
@@ -18,6 +18,9 @@ pub struct AdbVersion {
 pub struct Adb;
 
 impl Adb {
+
+    /// hàm chạy các lệnh adb
+    /// ## return
     pub async fn execute(args: &[&str]) -> Result<String, String> {
         let output = Command::new(ADB)
             .args(args)
@@ -32,6 +35,9 @@ impl Adb {
         }
     }
 
+    /// kiểm tra phiên bản của Adb
+    /// ## return
+    /// [`AdbVersion`]
     pub async fn get_version() -> Result<AdbVersion, String> {
         let stdout = Self::execute(&[VERSION]).await?;
 
@@ -61,6 +67,9 @@ impl Adb {
         }
     }
 
+    /// lấy các thiết bị đang kết nối
+    /// ## return
+    /// Vec<[`AdbDevice`]>
     pub async fn list_devices() -> Result<Vec<AdbDevice>, String> {
         let stdout = Self::execute(&[DEVICES]).await?;
         let mut devices = Vec::new();
@@ -77,13 +86,38 @@ impl Adb {
         Ok(devices)
     }
 
-    pub async fn push(source: &str, directory: &str) -> bool {
+    /// copy từ máy tính sang điện thoại
+    /// ## arguments
+    /// * `source`: đường dẫn file trên máy tính
+    /// * `directory`: đường dẫn như mục trên điện thoại
+    /// ## return
+    /// `true` nếu thành công
+    pub async fn push(source: &str, directory: &str) -> Result<bool, String> {
         let result = Self::execute(&[PUSH, source, directory])
                                             .await;
 
         match result {
-            Ok(out) => !out.is_empty() || true,
-            Err(_) => false,
+            Ok(out) => Ok(!out.is_empty()),
+            Err(_) => Err(format!("Không thể copy file {} từ máy tính sang điện thoại.", source)),
         }
+    }
+
+    // copy từ điện thoại sang máy tính
+    /// ## arguments
+    /// * `source`: đường dẫn file trên điện thoại
+    /// * `directory`: đường dẫn như mục trên máy tính
+    /// ## return
+    /// `true` nếu thành công
+    pub async fn pull(source: &str, directory: &str) -> Result<bool, String> {
+        let result = Self::execute(&[PULL, source, directory])
+                                            .await;
+        match result {
+            Ok(out) => Ok(!out.is_empty()),
+            Err(_) => Err(format!("Không thể copy file {} từ điện thoại sang máy tính.", source)),
+        }
+    }
+
+    pub async fn install() -> Result<bool, String>{
+
     }
 }
