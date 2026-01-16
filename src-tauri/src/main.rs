@@ -6,16 +6,15 @@ use sqlx::sqlite::SqlitePoolOptions;
 use tokio::sync::Mutex;
 
 mod server;
-mod devices;
+mod models;
 mod adb;
-mod setting;
 mod message;
 
 use server::{ServerState, start_server, stop_server, get_status};
 //use device::{adb_list_device, test_error, test_success};
 use setting::*;
 
-use crate::server::DbState;
+use crate::server::TauriState;
 
 #[tokio::main]
 async fn main() {
@@ -30,7 +29,7 @@ async fn main() {
 
     tauri::Builder::default()
     .manage(Arc::new(Mutex::new(ServerState::new())))
-    .manage(DbState { pool })
+    .manage(TauriState::new(pool))
     .invoke_handler(tauri::generate_handler![
         // Server
         start_server, stop_server, get_status,

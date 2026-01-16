@@ -1,17 +1,17 @@
 use tokio::process::Command;
 
-use crate::adb::args::{ADB, DEVICE, DEVICES, PULL, PUSH, VERSION};
+use crate::adb::args::{ADB, DEVICE, DEVICES, INSTALL, PULL, PUSH, UNINSTALL, VERSION};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdbDevice {
-    serial: String,
+    pub serial: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct AdbVersion {
-    bridge_version: String,
-    version: String,
-    installed_path: Option<String>,
+    pub bridge_version: String,
+    pub version: String,
+    pub installed_path: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -102,7 +102,7 @@ impl Adb {
         }
     }
 
-    // copy từ điện thoại sang máy tính
+    /// copy từ điện thoại sang máy tính
     /// ## arguments
     /// * `source`: đường dẫn file trên điện thoại
     /// * `directory`: đường dẫn như mục trên máy tính
@@ -117,7 +117,47 @@ impl Adb {
         }
     }
 
-    pub async fn install() -> Result<bool, String>{
 
+    /// cài 1 ứng dụng bằng file apk
+    /// ## arguments
+    /// * `source`: đường dẫn file apk
+    /// ## return
+    /// `true` nếu thành công
+    pub async fn install(source: &str) -> Result<bool, String>{
+        let result = Self::execute(&[INSTALL, source])
+                                            .await;
+        match result {
+            Ok(out) => Ok(!out.is_empty()),
+            Err(_) => Err(format!("Lỗi cài đặt ứng dụng:", source)),
+        }
+    }
+
+    /// cài đè 1 ứng dụng bằng file apk
+    /// ## arguments
+    /// * `source`: đường dẫn file apk
+    /// ## return
+    /// `true` nếu thành công
+    pub async fn reinstall(source: &str) -> Result<bool, String>{
+        let result = Self::execute(&[INSTALL,"-r",source])
+                                            .await;
+        match result {
+            Ok(out) => Ok(!out.is_empty()),
+            Err(_) => Err(format!("Lỗi cài đặt ứng dụng:", source)),
+        }
+    }
+
+
+    /// gỡ ứng dụng theo tên
+    /// ## arguments
+    /// * `source`: tên ứng dụng
+    /// ## return
+    /// `true` nếu thành công
+    pub async fn uninstall(name: &str) -> Result<bool, String>{
+        let result = Self::execute(&[UNINSTALL,name])
+                                            .await;
+        match result {
+            Ok(out) => Ok(!out.is_empty()),
+            Err(_) => Err(format!("Lỗi gỡ ứng dụng:", name)),
+        }
     }
 }

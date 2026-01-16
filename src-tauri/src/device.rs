@@ -17,11 +17,6 @@ pub struct Device {
     pub status: Option<String>
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct AdbDevice{
-    pub serial: String,
-}
-
 ///
 /// Chạy lệnh ADB để tìm kiếm các thiết bị đang kết nối với máu tính
 #[tauri::command]
